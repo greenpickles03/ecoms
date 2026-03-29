@@ -1,5 +1,6 @@
 package com.black.ecoms.service;
 
+import com.black.ecoms.dto.ChangePasswordRequest;
 import com.black.ecoms.dto.UserRegistrationRequest;
 import com.black.ecoms.model.Users;
 import com.black.ecoms.repository.UserRepository;
@@ -8,6 +9,7 @@ import com.black.ecoms.utility.Role;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -18,6 +20,7 @@ public class UsersService implements UsersImp {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    public String code;
 
     public UsersService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -47,6 +50,43 @@ public class UsersService implements UsersImp {
                 "message", "User created successfully",
                 "details", user,
                 "status", 201
+        );
+    }
+
+    public Map<String, Object> generateCode() {
+        // Generate a random 6-digit code
+        SecureRandom random = new SecureRandom();
+        int otp = 100000 + random.nextInt(900000); // 6-digit OTP
+        code = String.valueOf(otp);
+        return Map.of("message", "Code generated successfully", "code", code, "status", 200);
+    }
+
+    @Override
+    public Map<String, Object> changePassword(ChangePasswordRequest request) {
+
+        Optional<Users> usersList = userRepository.findByEmail(request.getEmail());
+        if(usersList.isPresent()){
+            if (usersList.get().getEmail().equals(request.getEmail()) && request.getRequestCode().equals(code)){
+                Users user = usersList.get();
+                user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+                userRepository.save(user);
+                return Map.of(
+                        "message", "Password changed successfully",
+                        "details", user,
+                        "status", 200
+                );
+            } else {
+                return Map.of(
+                        "message", "Invalid code or email",
+                        "status", 400
+                );
+            }
+        }
+
+        return Map.of(
+                "message", "Account not exists",
+                "details", request,
+                "status", 400
         );
     }
 }

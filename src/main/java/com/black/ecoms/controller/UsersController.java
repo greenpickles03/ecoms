@@ -1,5 +1,6 @@
 package com.black.ecoms.controller;
 
+import com.black.ecoms.dto.ChangePasswordRequest;
 import com.black.ecoms.dto.LoginRequest;
 import com.black.ecoms.dto.UserRegistrationRequest;
 import com.black.ecoms.service.UserDetailsServiceImpl;
@@ -49,5 +50,15 @@ public class UsersController {
                 "email", userDetails.getUsername(),
                 "roles", userDetails.getAuthorities()
         ));
+    }
+
+    @GetMapping("/generate-code")
+    public ResponseEntity<Map<String, Object>> generateCode(){
+        return ResponseEntity.ok(usersService.generateCode());
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Map<String, Object>> changePassword(@RequestBody ChangePasswordRequest request){
+        return ResponseEntity.ok(usersService.changePassword(request));
     }
 }
