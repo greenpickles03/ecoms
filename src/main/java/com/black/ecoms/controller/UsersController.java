@@ -1,6 +1,7 @@
 package com.black.ecoms.controller;
 
 import com.black.ecoms.dto.ChangePasswordRequest;
+import com.black.ecoms.dto.GenerateCodeRequest;
 import com.black.ecoms.dto.LoginRequest;
 import com.black.ecoms.dto.UserRegistrationRequest;
 import com.black.ecoms.service.UserDetailsServiceImpl;
@@ -52,9 +53,9 @@ public class UsersController {
         ));
     }
 
-    @GetMapping("/generate-code")
-    public ResponseEntity<Map<String, Object>> generateCode(){
-        return ResponseEntity.ok(usersService.generateCode());
+    @PostMapping("/generate-code")
+    public ResponseEntity<Map<String, Object>> generateCode(@RequestBody GenerateCodeRequest request){
+        return ResponseEntity.ok(usersService.generateCode(request.getEmail()));
     }
 
     @PostMapping("/change-password")

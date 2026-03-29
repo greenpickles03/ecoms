@@ -20,11 +20,13 @@ public class UsersService implements UsersImp {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
     public String code;
 
-    public UsersService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UsersService(UserRepository userRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     @Override
@@ -53,12 +55,32 @@ public class UsersService implements UsersImp {
         );
     }
 
-    public Map<String, Object> generateCode() {
+    public Map<String, Object> generateCode(String email) {
+        // Check if user exists
+        Optional<Users> user = userRepository.findByEmail(email);
+        if (user.isEmpty()) {
+            return Map.of("message", "User not found", "status", 404);
+        }
+
         // Generate a random 6-digit code
         SecureRandom random = new SecureRandom();
         int otp = 100000 + random.nextInt(900000); // 6-digit OTP
         code = String.valueOf(otp);
-        return Map.of("message", "Code generated successfully", "code", code, "status", 200);
+
+        // Send code via email
+        boolean emailSent = emailService.sendPasswordResetCode(email, code);
+
+        if (emailSent) {
+            return Map.of(
+                    "message", "Code generated and sent to your email successfully",
+                    "status", 200
+            );
+        } else {
+            return Map.of(
+                    "message", "Code generated but failed to send email",
+                    "status", 500
+            );
+        }
     }
 
     @Override
