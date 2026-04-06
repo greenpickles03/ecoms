@@ -9,5 +9,6 @@ public interface UsersImp {
 
     Map<String, Object> createUsers(UserRegistrationRequest request);
     Map<String, Object> changePassword(ChangePasswordRequest request);
+    Map<String, Object> fetchAllUsers();
 
 }

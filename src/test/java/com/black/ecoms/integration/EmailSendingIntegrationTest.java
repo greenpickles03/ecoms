@@ -10,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -24,6 +25,7 @@ import java.util.Set;
  * export MAIL_FROM=your-gmail@gmail.com
  */
 @SpringBootTest
+@Transactional
 @DisplayName("Email Sending Integration Tests")
 class EmailSendingIntegrationTest {
 

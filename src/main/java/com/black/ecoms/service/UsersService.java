@@ -6,9 +6,11 @@ import com.black.ecoms.model.Users;
 import com.black.ecoms.repository.UserRepository;
 import com.black.ecoms.service.impl.UsersImp;
 import com.black.ecoms.utility.Role;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.Map;
@@ -19,13 +21,11 @@ import java.util.Set;
 public class UsersService implements UsersImp {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     public String code;
 
-    public UsersService(UserRepository userRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
+    public UsersService(UserRepository userRepository, EmailService emailService) {
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
     }
 
@@ -43,7 +43,7 @@ public class UsersService implements UsersImp {
         Users user = new Users(
                 request.getName(),
                 request.getEmail(),
-                passwordEncoder.encode(request.getPassword()),
+                hashPassword(request.getPassword()),
                 new HashSet<>(Set.of(Role.ROLE_USER))
         );
         userRepository.save(user);
@@ -90,7 +90,7 @@ public class UsersService implements UsersImp {
         if(usersList.isPresent()){
             if (usersList.get().getEmail().equals(request.getEmail()) && request.getRequestCode().equals(code)){
                 Users user = usersList.get();
-                user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+                user.setPassword(hashPassword(request.getNewPassword()));
                 userRepository.save(user);
                 return Map.of(
                         "message", "Password changed successfully",
@@ -110,5 +110,28 @@ public class UsersService implements UsersImp {
                 "details", request,
                 "status", 400
         );
+    }
+
+    @Override
+    public Map<String, Object> fetchAllUsers() {
+        return Map.of(
+                "message", "Users fetched successfully",
+                "details", userRepository.findAll(),
+                "status", 200
+        );
+    }
+
+    private String hashPassword(String rawPassword) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashed = digest.digest(rawPassword.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashed) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Password hashing algorithm unavailable", e);
+        }
     }
 }
