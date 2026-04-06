@@ -3,6 +3,7 @@ package com.black.ecoms.security;
 import com.black.ecoms.service.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -31,14 +32,16 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-        .formLogin(AbstractHttpConfigurer::disable)
-        .httpBasic(AbstractHttpConfigurer::disable)
+                .cors(cors -> {})
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-            .requestMatchers(
-                PathPatternRequestMatcher.pathPattern("/api/auth/**"),
-                PathPatternRequestMatcher.pathPattern("/api/users/register")
-            ).permitAll()
-            .requestMatchers(PathPatternRequestMatcher.pathPattern("/api/admin/**")).hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(
+                                PathPatternRequestMatcher.pathPattern("/api/auth/**"),
+                                PathPatternRequestMatcher.pathPattern("/api/users/register")
+                        ).permitAll()
+                        .requestMatchers(PathPatternRequestMatcher.pathPattern("/api/admin/**")).hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
