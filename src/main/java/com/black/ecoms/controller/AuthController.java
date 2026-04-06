@@ -2,6 +2,7 @@ package com.black.ecoms.controller;
 
 import com.black.ecoms.dto.AuthResponse;
 import com.black.ecoms.dto.LoginRequest;
+import com.black.ecoms.dto.LoginResponse;
 import com.black.ecoms.dto.RegisterRequest;
 import com.black.ecoms.model.Users;
 import com.black.ecoms.repository.UserRepository;
@@ -59,19 +60,17 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
         Optional<Users> userOpt = userRepository.findByEmail(request.getEmail());
 
         if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "Invalid email or password"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         Users user = userOpt.get();
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "Invalid email or password"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         Set<String> roleNames = user.getRoles().stream()
@@ -79,7 +78,7 @@ public class AuthController {
                 .collect(Collectors.toSet());
 
         String token = jwtUtil.generateToken(user.getEmail(), roleNames);
-        return ResponseEntity.ok(new AuthResponse(token, user.getEmail(), String.join(",", roleNames)));
+        return ResponseEntity.ok(new LoginResponse(token));
     }
 
     @GetMapping("/validate")
