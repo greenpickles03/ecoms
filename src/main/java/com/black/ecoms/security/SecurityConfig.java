@@ -39,7 +39,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
                                 PathPatternRequestMatcher.pathPattern("/api/auth/**"),
-                                PathPatternRequestMatcher.pathPattern("/api/users/register")
+                                PathPatternRequestMatcher.pathPattern("/api/users/register"),
+                                PathPatternRequestMatcher.pathPattern("/api/users/generate-code"),
+                                PathPatternRequestMatcher.pathPattern("/api/users/change-password")
                         ).permitAll()
                         .requestMatchers(PathPatternRequestMatcher.pathPattern("/api/admin/**")).hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated()

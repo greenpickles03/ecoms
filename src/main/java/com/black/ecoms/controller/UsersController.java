@@ -27,6 +27,7 @@ public class UsersController {
 
     @PostMapping("/generate-code")
     public ResponseEntity<Map<String, Object>> generateCode(@RequestBody GenerateCodeRequest request){
+        System.out.println("Received email for code generation: " + request.getEmail());
         return ResponseEntity.ok(usersService.generateCode(request.getEmail()));
     }
 
